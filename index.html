@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Verifica IBAN - Octopus Energy</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f4f7fa; margin: 0; padding: 20px; box-sizing: border-box; }
+        .container { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; text-align: center; }
+        input { width: calc(100% - 24px); padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 15px; }
+        button { width: 100%; padding: 12px 20px; font-size: 16px; color: white; background-color: #f05a28; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #c84a21; }
+        #result { margin-top: 25px; padding: 15px; border-radius: 5px; font-size: 1.1em; font-weight: bold; text-align: center; display: none; }
+        .valid { background-color: #e8f5e9; color: #2e7d32; }
+        .invalid { background-color: #ffeb-ee; color: #c62828; }
+        .loading { background-color: #e1f5fe; color: #0277bd; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://octopusenergy.it/static/images/logo-full-200.png" alt="Logo Octopus Energy" style="max-width: 200px; margin-bottom: 20px;">
+        <h2>Tool di Verifica IBAN</h2>
+
+        <form id="ibanForm">
+            <input type="text" id="ibanInput" placeholder="Inserisci l'IBAN da verificare" required>
+            <button type="submit">Verifica</button>
+        </form>
+
+        <div id="result"></div>
+    </div>
+    
+    <script>
+        // === UNICA PARTE DA MODIFICARE ===
+        const SERVICE_URL = "https://iban-validator.onrender.com/validate";
+        // ==================================
+
+        const ibanForm = document.getElementById('ibanForm');
+        const ibanInput = document.getElementById('ibanInput');
+        const resultDiv = document.getElementById('result');
+
+        ibanForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Impedisce al form di ricaricare la pagina
+            validateIban(ibanInput.value);
+        });
+
+        async function validateIban(ibanValue) {
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'loading';
+            resultDiv.textContent = 'Verifica in corso...';
+
+            try {
+                const response = await fetch(SERVICE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ iban: ibanValue })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Errore del server');
+                
+                resultDiv.textContent = `IBAN ${data.status.toUpperCase()}`;
+                resultDiv.className = data.status === 'Valido' ? 'valid' : 'invalid';
+
+            } catch (error) {
+                console.error('Errore nella chiamata:', error);
+                resultDiv.textContent = 'Verifica non riuscita. Riprova.';
+                resultDiv.className = 'invalid';
+            }
+        }
+    </script>
+</body>
+</html>

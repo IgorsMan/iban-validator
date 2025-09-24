@@ -7,4 +7,4 @@ services:
     startCommand: "gunicorn --workers 4 --bind 0.0.0.0:10000 app:app"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9
+        value: 3.9.16
